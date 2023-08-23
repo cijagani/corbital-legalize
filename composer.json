@@ -17,6 +17,7 @@
     ],
     "require": {
         "php": "^7.4|^8.0",
+        "defuse/php-encryption": "^2.4",
         "rmccue/requests": "^2.0"
     },
     "autoload": {
