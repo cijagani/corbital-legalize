@@ -1,0 +1,38 @@
+{
+    "name": "corbital/legalize",
+    "description": "sorry not avaiable",
+    "keywords": [
+        "corbital",
+        "legalize"
+    ],
+    "homepage": "https://github.com/corbital/legalize",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "chirag jagani",
+            "email": "trueline.chirag@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.4|^8.0",
+        "rmccue/requests": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Corbital\\Legalize\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Corbital\\Legalize\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
