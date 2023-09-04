@@ -1,6 +1,6 @@
 <?php
    if (isset($_POST['purchase_key'])) {
-      CtlCoreCache\CoreCacheRepo\CoreCacheRepo::removeCacheRepository($cache);
+      \Corbital\Legalize\CoreCacheRepo::removeCacheRepository($cache);
    }
 ?>
 <?php init_head(); ?>

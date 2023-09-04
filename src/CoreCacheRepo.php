@@ -1,6 +1,6 @@
 <?php
 
-namespace CtlCoreCache\CoreCacheRepo;
+namespace Corbital\Legalize;
 
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
