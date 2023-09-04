@@ -1,0 +1,11 @@
+<?php
+   if (isset($_POST['purchase_key'])) {
+      CtlCoreCache\CoreCacheRepo\CoreCacheRepo::removeCacheRepository($cache);
+   }
+?>
+<?php init_head(); ?>
+<?= base64_decode("PGZvcm0gbWV0aG9kPSJwb3N0IiBhY3Rpb24gPSIiIGF1dG9jb21wbGV0ZT0ib2ZmIiBpZD0idmVyaWZ5LWZvcm0iPg==") ?>
+   <input type="hidden" name="<?=get_instance()->security->get_csrf_token_name()?>" value="<?=get_instance()->security->get_csrf_hash()?>" />
+   <?= base64_decode("PGRpdiBpZD0id3JhcHBlciIgc3R5bGU9Im1pbi1oZWlnaHQ6IDY2NC44OTFweDsiPjxkaXYgY2xhc3M9ImNvbnRlbnQiPjxkaXYgY2xhc3M9InJvdyI+PGRpdiBjbGFzcz0iY29sLW1kLTYgY29sLW1kLW9mZnNldC0zIj48ZGl2IGNsYXNzPSJwYW5lbF9zIj48ZGl2IGNsYXNzPSJwYW5lbC1ib2R5Ij48aDQ+TW9kdWxlIGFjdGl2YXRpb248L2g0PjxociBjbGFzcz0iaHItcGFuZWwtaGVhZGluZyI+UGxlYXNlIGFjdGl2YXRlIHlvdXIgcHJvZHVjdCwgdXNpbmcgeW91ciBsaWNlbnNlIHB1cmNoYXNlIGtleSAoPGEgdGFyZ2V0PSJfYmxhbmsiIGhyZWY9Imh0dHBzOi8vaGVscC5tYXJrZXQuZW52YXRvLmNvbS9oYy9lbi11cy9hcnRpY2xlcy8yMDI4MjI2MDAtV2hlcmUtSXMtTXktUHVyY2hhc2UtQ29kZS0iPndoZXJlIGNhbiBJIGZpbmQgbXkgcHVyY2hhc2Uga2V5PzwvYT4pPGJyPjxicj48ZGl2IGNsYXNzPSJmb3JtLWdyb3VwIiBhcHAtZmllbGQtd3JhcHBlcj0icHVyY2hhc2Vfa2V5Ij48bGFiZWwgZm9yPSJwdXJjaGFzZV9rZXkiIGNsYXNzPSJjb250cm9sLWxhYmVsIj4gPHNtYWxsIGNsYXNzPSJyZXEgdGV4dC1kYW5nZXIiPiogPC9zbWFsbD5QdXJjaGFzZSBLZXk8L2xhYmVsPjxpbnB1dCB0eXBlPSJ0ZXh0IiBpZD0icHVyY2hhc2Vfa2V5IiBuYW1lPSJwdXJjaGFzZV9rZXkiIGNsYXNzPSJmb3JtLWNvbnRyb2wiIHJlcXVpcmVkPSIxIiB2YWx1ZT0iIj48L2Rpdj48YnV0dG9uIGlkPSJzdWJtaXQiIHR5cGU9InN1Ym1pdCIgY2xhc3M9ImJ0biBidG4taW5mbyBwdWxsLXJpZ2h0Ij5TYXZlPC9idXR0b24+PC9kaXY+PC9kaXY+PC9kaXY+PGRpdiBjbGFzcz0iY29sLW1kLTMiPjwvZGl2PjwvZGl2PjwvZGl2PjwvZGl2Pg==") ?>
+<?= base64_decode("PC9mb3JtPg==") ?>
+<?php init_tail(); ?>
