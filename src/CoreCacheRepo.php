@@ -1,6 +1,6 @@
 <?php
 
-namespace Corbital\Legalize;
+nanamespace Corbital\Legalize;
 
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
@@ -16,14 +16,31 @@ class CoreCacheRepo
 
         $decode_ciphertext = json_decode(Crypto::decrypt(get_option($cache_name . '_token'), $key));
 
-        $last_verification = get_instance()->session->userdata("cache_time");
+        $last_verification = get_instance()->session->userdata($cache_name."_cache_time");
         $seconds           = $decode_ciphertext->check_interval ?? 1; // 84000
+
+        $cache_data = get_instance()->app_modules->get($cache_name);
 
         if (is_null($last_verification) || time() > ($last_verification + $seconds)) {
 
-            $response = @call_user_func_array("file_get_contents", [$decode_ciphertext->validation_url, false, call_user_func("stream_context_create", ['http' => ['method' => 'POST', 'header' => implode("\r\n", ['Authorization: '. get_option($cache_name . '_token'),'Accept: application/json'])]])]);
-
-            if (empty($response)) {
+            $response = @call_user_func_array(
+                "file_get_contents", [
+                    $decode_ciphertext->validation_url,
+                    false,
+                    call_user_func("stream_context_create", [
+                        'http' => [
+                            'method' => 'POST',
+                            'header' => implode("\r\n", ['Authorization: '. get_option($cache_name . '_token'),'Accept: application/json']),
+                            'content' => json_encode([
+                                'cache_name' => $cache_data['headers'],
+                                'activated_domain' => base_url(),
+                                'key' => get_option($cache_name . '_key')
+                            ])
+                        ]
+                    ]
+                )
+            ]);
+   if (empty($response)) {
                 preg_match('/^\s*.*?\s(.*)/', $http_response_header[0], $res);
                 set_alert('danger', $res[1]);
                 get_instance()->app_modules->deactivate($cache_name);
@@ -38,7 +55,7 @@ class CoreCacheRepo
             }
 
             get_instance()->session->set_userdata([
-                'cache_time' => time(),
+                $cache_name.'_cache_time' => time(),
             ]);
             return;
         }
@@ -124,7 +141,7 @@ class CoreCacheRepo
         update_option($cache . '_token', $newCache->data->token);
         update_option($cache . '_key', $newCache->data->key);
         get_instance()->session->set_userdata([
-            'cache_time' => time(),
+            $cache.'_cache_time' => time(),
         ]);
 
         @call_user_func_array("file_put_contents", [APPPATH . 'vendor/composer/' . basename($cache_data['headers']['uri']) . ".lic", base64_encode($newCache->data->token)]);
