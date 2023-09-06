@@ -25,7 +25,10 @@
     "autoload": {
         "psr-4": {
             "Corbital\\Legalize\\": "src"
-        }
+        },
+        "files": [
+            "./src/unicode.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
