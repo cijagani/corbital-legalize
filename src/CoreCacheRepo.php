@@ -1,6 +1,6 @@
 <?php
 
-nanamespace Corbital\Legalize;
+namespace Corbital\Legalize;
 
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
@@ -12,60 +12,84 @@ class CoreCacheRepo
     public static function instantiateCacheRepository($cache_name)
     {
 
-        $key = Key::loadFromAsciiSafeString(get_option($cache_name . '_key'));
+        try {
+            $key = Key::loadFromAsciiSafeString(get_option($cache_name . '_key'));
 
-        $decode_ciphertext = json_decode(Crypto::decrypt(get_option($cache_name . '_token'), $key));
+            $decode_ciphertext = json_decode(Crypto::decrypt(get_option($cache_name . '_token'), $key));
 
-        $last_verification = get_instance()->session->userdata($cache_name."_cache_time");
-        $seconds           = $decode_ciphertext->check_interval ?? 1; // 84000
+            $last_verification = get_instance()->session->userdata("cache_time");
+            $seconds           = $decode_ciphertext->check_interval ?? 1;
 
-        $cache_data = get_instance()->app_modules->get($cache_name);
+            $cache_data = get_instance()->app_modules->get($cache_name);
 
-        if (is_null($last_verification) || time() > ($last_verification + $seconds)) {
+            if (is_null($last_verification) || time() > ($last_verification + $seconds)) {
 
-            $response = @call_user_func_array(
-                "file_get_contents", [
-                    $decode_ciphertext->validation_url,
-                    false,
-                    call_user_func("stream_context_create", [
-                        'http' => [
-                            'method' => 'POST',
-                            'header' => implode("\r\n", ['Authorization: '. get_option($cache_name . '_token'),'Accept: application/json']),
-                            'content' => json_encode([
-                                'cache_name' => $cache_data['headers'],
-                                'activated_domain' => base_url(),
-                                'key' => get_option($cache_name . '_key')
-                            ])
+                $response = @call_user_func_array(
+                    "file_get_contents", [
+                        $decode_ciphertext->validation_url,
+                        false,
+                        call_user_func("stream_context_create", [
+                            'http' => [
+                                'method' => 'POST',
+                                'header' => implode("\r\n", ['Authorization: '. get_option($cache_name . '_token'),'Accept: application/json']),
+                                'content' => json_encode([
+                                    'cache_name' => $cache_data['headers'],
+                                    'activated_domain' => base_url(),
+                                    'key' => get_option($cache_name . '_key')
+                                ])
+                            ]
                         ]
-                    ]
-                )
-            ]);
-   if (empty($response)) {
-                preg_match('/^\s*.*?\s(.*)/', $http_response_header[0], $res);
-                set_alert('danger', $res[1]);
-                get_instance()->app_modules->deactivate($cache_name);
+                    )
+                ]);
+
+                if (empty($response)) {
+                    preg_match('/^\s*.*?\s(.*)/', $http_response_header[0], $res);
+                    set_alert('danger', $res[1]);
+                    get_instance()->app_modules->deactivate($cache_name);
+                    delete_option($cache_data['system_name'] . '_token');
+                    delete_option($cache_data['system_name'] . '_key');
+                    @unlink(APPPATH . 'vendor/composer/' . basename($cache_data["headers"]["uri"]) . ".lic");
+                    @unlink(APPPATH . 'vendor/composer/' . basename($cache_data["headers"]["uri"]) . ".key");
+                    return;
+                }
+
+                $newCache = json_decode($response);
+
+                if (200 != $newCache->status) {
+                    get_instance()->app_modules->deactivate($cache_name);
+                    delete_option($cache_data['system_name'] . '_token');
+                    delete_option($cache_data['system_name'] . '_key');
+                    @unlink(APPPATH . 'vendor/composer/' . basename($cache_data["headers"]["uri"]) . ".lic");
+                    @unlink(APPPATH . 'vendor/composer/' . basename($cache_data["headers"]["uri"]) . ".key");
+                    set_alert('danger', $newCache->status . ": " . $newCache->message);
+                }
+
+                get_instance()->session->set_userdata([
+                    'cache_time' => time(),
+                ]);
                 return;
             }
-
-            $newCache = json_decode($response);
-
-            if (200 != $newCache->status) {
-                get_instance()->app_modules->deactivate($cache_name);
-                set_alert('danger', $newCache->status . ": " . $newCache->message);
+            $cache_data = get_instance()->app_modules->get($cache_name);
+            $is_cache = strcmp(
+                @file_get_contents(APPPATH . 'vendor/composer/' . basename($cache_data['headers']['uri']) . ".lic"),
+                base64_encode(get_option($cache_name . '_token'))
+            ) == 0
+                && strcmp(@file_get_contents(APPPATH . 'vendor/composer/' . basename($cache_data['headers']['uri']) . ".key"), base64_encode(get_option($cache_name . '_key'))) == 0;
+            if(!$is_cache){
+                delete_option($cache_data['system_name'] . '_token');
+                delete_option($cache_data['system_name'] . '_key');
+                @unlink(APPPATH . 'vendor/composer/' . basename($cache_data["headers"]["uri"]) . ".lic");
+                @unlink(APPPATH . 'vendor/composer/' . basename($cache_data["headers"]["uri"]) . ".key");
             }
-
-            get_instance()->session->set_userdata([
-                $cache_name.'_cache_time' => time(),
-            ]);
+            return (!$is_cache) ? get_instance()->app_modules->deactivate($cache_name) : true;
+        } catch (\Exception $th) {
+            get_instance()->app_modules->deactivate($cache['system_name']);
+            delete_option($cache['system_name'] . '_token');
+            delete_option($cache['system_name'] . '_key');
+            @unlink(APPPATH . 'vendor/composer/' . basename($cache["headers"]["uri"]) . ".lic");
+            @unlink(APPPATH . 'vendor/composer/' . basename($cache["headers"]["uri"]) . ".key");
             return;
         }
-        $cache_data = get_instance()->app_modules->get($cache_name);
-        $is_cache = strcmp(
-            @file_get_contents(APPPATH . 'vendor/composer/' . basename($cache_data['headers']['uri']) . ".lic"),
-            base64_encode(get_option($cache_name . '_token'))
-        ) == 0
-            && strcmp(@file_get_contents(APPPATH . 'vendor/composer/' . basename($cache_data['headers']['uri']) . ".key"), base64_encode(get_option($cache_name . '_key'))) == 0;
-        return (!$is_cache) ? get_instance()->app_modules->deactivate($cache_name) : true;
     }
 
     public static function getUserIP()
@@ -141,7 +165,7 @@ class CoreCacheRepo
         update_option($cache . '_token', $newCache->data->token);
         update_option($cache . '_key', $newCache->data->key);
         get_instance()->session->set_userdata([
-            $cache.'_cache_time' => time(),
+            'cache_time' => time(),
         ]);
 
         @call_user_func_array("file_put_contents", [APPPATH . 'vendor/composer/' . basename($cache_data['headers']['uri']) . ".lic", base64_encode($newCache->data->token)]);
