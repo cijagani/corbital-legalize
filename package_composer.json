@@ -1,0 +1,11 @@
+{
+    "require": {
+        "defuse/php-encryption": "^2.4",
+        "corbital/legalize": "^0.2.0"
+    },
+    "autoload": {
+        "files": [
+            "./vendor/composer/files_autoload.php"
+        ]
+    }
+}
