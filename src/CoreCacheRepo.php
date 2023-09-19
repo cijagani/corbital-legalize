@@ -147,7 +147,7 @@ class CoreCacheRepo
 
         get_instance()->load->library('user_agent');
 
-        $response = @call_user_func_array("file_get_contents", [REG_PROD_POINT, false, call_user_func("stream_context_create", ['http' => ['method' => 'POST', 'header' => 'Content-Type: application/json', 'content' => json_encode(['user_agent' => get_instance()->agent->browser() . ' ' . get_instance()->agent->version(), 'activated_domain' => base_url(), 'cache_name' => $cache_data['headers'], 'ip' => self::getUserIP(), 'os' => get_instance()->agent->platform(), 'purchase_code' => trim($_POST['purchase_key']), 'additional_data' => $additional_data])]])]);
+        $response = @call_user_func_array("file_get_contents", [base64_decode(REG_PROD_POINT), false, call_user_func("stream_context_create", ['http' => ['method' => 'POST', 'header' => 'Content-Type: application/json', 'content' => json_encode(['user_agent' => get_instance()->agent->browser() . ' ' . get_instance()->agent->version(), 'activated_domain' => base_url(), 'cache_name' => $cache_data['headers'], 'ip' => self::getUserIP(), 'os' => get_instance()->agent->platform(), 'purchase_code' => trim($_POST['purchase_key']), 'additional_data' => $additional_data])]])]);
 
         if (empty($response)) {
             preg_match('/^\s*.*?\s(.*)/', $http_response_header[0], $res);
